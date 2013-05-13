@@ -3,6 +3,7 @@ import java.util.Set;
 
 import soot.Local;
 import soot.Unit;
+import soot.Value;
 import soot.ValueBox;
 import soot.toolkits.graph.DirectedGraph;
 import soot.toolkits.scalar.BackwardFlowAnalysis;
@@ -12,16 +13,23 @@ public class LiveVariables extends BackwardFlowAnalysis<Unit, Set<Local>> {
 
 	public LiveVariables(DirectedGraph<Unit> graph) {
 		super(graph);
+		this.doAnalysis();
 	}
 
 	@Override
 	protected void flowThrough(Set<Local> in, Unit d, Set<Local> out) {
 		out.clear();
 		out.addAll(in);
-		out.removeAll(d.getDefBoxes());
+		for (ValueBox b : d.getDefBoxes()) {
+			Value v = b.getValue();
+			if (v instanceof Local) {
+				out.remove(v);
+			}
+		}
 		for (ValueBox b : d.getUseBoxes()) {
-			if (b instanceof Local) {
-				out.add((Local) b);
+			Value v = b.getValue();
+			if (v instanceof Local) {
+				out.add((Local) v);
 			}
 		}
 	}
