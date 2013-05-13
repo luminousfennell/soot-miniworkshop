@@ -1,0 +1,11 @@
+* soot-miniworkshop
+Sources for our internal soot mini workshop
+** Installation 
+- Get Eclipse (Juno is fine)
+- Go to http://www.sable.mcgill.ca/soot/soot_download.html, download soot-2.5.0, the complete package
+- Unpack the archive somewhere (three directories, (soot, polyglot, jasmin) will be created)
+- Download a binary distribution of [[http://ant.apache.org/bindownload.cgi][Apache Ant]].
+- Follow instructions in =soot-2.5.0/index.html=. For now use =/Soot= in your Eclipse workspace as the project (we can change this later on, if this is inconvenient).
+- Install the [[http://www.sable.mcgill.ca/soot/eclipse/updates/index.html][Soot Eclipse plugin]]
+- Now you can import the workshop projects from this repository.
+
