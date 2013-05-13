@@ -29,6 +29,8 @@ public class TaintTracking extends ForwardFlowAnalysis<Unit, Set<Local>> {
 		Stmt s = (Stmt) d;
 		Sec useLevel = Sec.LOW;
 		
+		copy(in, out);
+		
 		if(s.containsInvokeExpr()) {
 			// a method call; it will define the security level of an assignment
 			String methodName = s.getInvokeExpr().getMethod().getName();

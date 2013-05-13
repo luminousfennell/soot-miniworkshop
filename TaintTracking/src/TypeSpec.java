@@ -24,11 +24,12 @@ public class TypeSpec<T> {
 	}
 
 	public ResultType<T> apply(Comparator<T> cmp, List<T> args) {
-		if (inputs.size() != args.size() + 1) {
-			return fail("Wrong number of arguments... should not happen.");
+		if (inputs.size() != args.size()) {
+			return fail("Wrong number of arguments (" + "inputs:" + inputs.size() + 
+					    " args:" + args.size() + ")... should not happen.");
 		} else {
 			for (int i = 0; i < inputs.size(); i++) {
-				if (cmp.compare(args.get(i), args.get(i)) > 0) {
+				if (cmp.compare(args.get(i), inputs.get(i)) > 0) {
 					return fail("Type mismatch at arpos " + i);
 				}
 			}

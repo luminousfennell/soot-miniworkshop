@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
@@ -25,20 +26,34 @@ public class Main {
 
 		@Override
 		public TypeSpec getType(String methodName) {
-			final TypeSpec<Sec> ignore = new TypeSpec<>(Collections.EMPTY_LIST, Sec.LOW);
+			final TypeSpec<Sec> ignore = new TypeSpec<>(Collections.EMPTY_LIST,
+					Sec.LOW);
+			final TypeSpec<Sec> ignore1 = new TypeSpec<>(
+					Collections.singletonList(Sec.LOW), Sec.LOW);
+			final TypeSpec<Sec> ignore2 = new TypeSpec<>(
+					Collections.unmodifiableList(Arrays.asList(new Sec[] {
+							Sec.LOW, Sec.LOW })), Sec.LOW);
 			switch (methodName) {
-			case "println": return ignore;
-			case "<init>": return ignore;
-			case "append": return ignore;
-			case "toString": return ignore;
-			case "secretSource": return
-					new TypeSpec<Sec>(Collections.EMPTY_LIST, Sec.HIGH);
-			case "publicSource": return
-					new TypeSpec<Sec>(Collections.EMPTY_LIST, Sec.LOW);
-			case "confidentialSink": return
-					new TypeSpec<Sec>(Collections.singletonList(Sec.HIGH), Sec.LOW);
-			case "publicSink": return
-					new TypeSpec<Sec>(Collections.singletonList(Sec.LOW), Sec.LOW);
+			case "println":
+				return ignore1;
+			case "<init>":
+				return ignore1;
+			case "append":
+				return ignore1;
+			case "toString":
+				return ignore1;
+			case "strAppend":
+				return ignore2;
+			case "secretSource":
+				return new TypeSpec<Sec>(Collections.EMPTY_LIST, Sec.HIGH);
+			case "publicSource":
+				return new TypeSpec<Sec>(Collections.EMPTY_LIST, Sec.LOW);
+			case "confidentialSink":
+				return new TypeSpec<Sec>(Collections.singletonList(Sec.HIGH),
+						Sec.LOW);
+			case "publicSink":
+				return new TypeSpec<Sec>(Collections.singletonList(Sec.LOW),
+						Sec.LOW);
 			default:
 				throw new IllegalArgumentException("Type for method "
 						+ methodName + " not found.");
@@ -61,6 +76,8 @@ public class Main {
 						TaintTracking analysis = new TaintTracking(mtyping, g);
 						for (Unit u : b.getUnits()) {
 							Stmt s = (Stmt) u;
+							System.out.println("line " + getLine(s) + ": "
+									+ analysis.getFlowBefore(s));
 							typeCheck(s, analysis);
 						}
 					}
@@ -76,7 +93,8 @@ public class Main {
 			TypeSpec<Sec> methodType = mtyping.getType(exp.getMethod()
 					.getName());
 			List<Sec> argTypes = getArgTypes(exp, analysis.getFlowBefore(s));
-			TypeSpec.ResultType<Sec> result = methodType.apply(Sec.CMP, argTypes);
+			TypeSpec.ResultType<Sec> result = methodType.apply(Sec.CMP,
+					argTypes);
 			if (!result.success()) {
 				System.err.println("Type error (line " + getLine(s) + "): "
 						+ result.getError());
@@ -101,7 +119,7 @@ public class Main {
 		if (s.hasTag("SourceLnPosTag")) {
 			lineDesc = ((SourceLnPosTag) s.getTag("SourceLnPosTag"));
 		}
-		return lineDesc != null? "" + (lineDesc.startLn()) : "<unknown>";
+		return lineDesc != null ? "" + (lineDesc.startLn()) : "<unknown>";
 	}
 
 }

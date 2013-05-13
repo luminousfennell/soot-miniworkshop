@@ -21,7 +21,7 @@ public class TaintTrackingTest {
 	}
 	
 	// type: (String^B1, String^B2) -> String^B1+B2
-	public static String append(String s1, String s2) {
+	public static String strAppend(String s1, String s2) {
 		return s1 + s2;
 	}
 
@@ -40,7 +40,7 @@ public class TaintTrackingTest {
 		publicSink(h); // error
 		confidentialSink(l); // ok
 		
-		publicSink(append(l, h)); // error
+		publicSink(strAppend(l, h)); // error
 	}
 
 }
