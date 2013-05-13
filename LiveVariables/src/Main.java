@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import soot.Body;
 import soot.BodyTransformer;
@@ -35,6 +37,40 @@ public class Main {
 		return result;
 	}
 
+	private static class ResultsPerLine {
+		private final Map<Integer, Set<String>> resultsBefore = new TreeMap<Integer, Set<String>>();
+		private final Map<Integer, Set<String>> resultsAfter = new TreeMap<Integer, Set<String>>();
+
+		
+		public void addResultBefore(int lineNo, Set<String> livesBefore) {
+			addResult(resultsBefore, lineNo, livesBefore);
+		}
+	
+		public void addResultAfter(int lineNo, Set<String> livesAfter) {
+			addResult(resultsAfter, lineNo, livesAfter);
+		}
+
+		private static void addResult(Map<Integer, Set<String>> rest,
+				int lineNo, Set<String> live) {
+			if (!rest.containsKey(lineNo)) {
+				rest.put(lineNo, new TreeSet<String>(live));
+			} else {
+				rest.get(lineNo).addAll(live);
+			}
+		}
+
+		public String formatResult(boolean before, boolean after) {
+			StringBuilder result = new StringBuilder();
+			for (int i : resultsBefore.keySet()) {
+				String s = "line " + i + 
+						(before? (" before: " + resultsBefore.get(i).toString()) : "") +
+						(after? " (after: " + resultsAfter.get(i).toString() : "");
+				result.append(s + "\n");
+			}
+			return result.toString();
+		}
+	}
+
 	/**
 	 * @param args
 	 */
@@ -48,22 +84,26 @@ public class Main {
 						UnitGraph g = new BriefUnitGraph(b);
 						FlowAnalysis<Unit, Set<Local>> analysis = new LiveVariables(
 								g);
+						ResultsPerLine results = new ResultsPerLine();
 						for (Unit unit : b.getUnits()) {
 							Stmt s = (Stmt) unit;
-							System.err.println("(before line " + getLine(s) + ")" + mapGetName(analysis.getFlowBefore(s)).toString());
-							System.err.println("(after line " + getLine(s) + ")" + mapGetName(analysis.getFlowAfter(s)).toString());
+							SourceLnPosTag line = getLine(s);
+							if (line != null) {
+								results.addResultBefore(line.startLn(), mapGetName(analysis.getFlowBefore(s)));
+								results.addResultAfter(line.endLn(), mapGetName(analysis.getFlowAfter(s)));
+							}
 						}
+						System.err.println(results.formatResult(true, false));
 					}
 				}));
 		System.err.println(System.getProperty("user.dir"));
 		soot.Main.main(args);
 	}
-	
-	private static String getLine(Stmt s) {
-		String lineDesc = "<unknown>";
+
+	private static SourceLnPosTag getLine(Stmt s) {
+		SourceLnPosTag lineDesc = null;
 		if (s.hasTag("SourceLnPosTag")) {
-			lineDesc = ""
-					+ ((SourceLnPosTag) s.getTag("SourceLnPosTag")).startLn();
+			lineDesc = ((SourceLnPosTag) s.getTag("SourceLnPosTag"));
 		}
 		return lineDesc;
 	}
